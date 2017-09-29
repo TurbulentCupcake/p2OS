@@ -9,6 +9,7 @@ int count_commands = 1; // keeps count of commands
 
 
 // function to iteratively print prompt
+// and retrieve user command
 char * prompt() { 
 	
 	printf("mysh (%d)> ", count_commands);
@@ -30,6 +31,14 @@ char * prompt() {
 	
 	return command;
 }
+
+
+
+
+
+
+
+
 
 
 int main(int argc, char * argv [])  {
