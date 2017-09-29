@@ -34,13 +34,32 @@ char * prompt() {
 
 
 // returns an array with parsed commands
-char * parseCommand(char * command) { 
+char ** parseCommand(char * command) { 
 
+	char *token;
 	char * saveptr = command;
 	char ** split_cmds = malloc(sizeof(char*)*BUFFERSIZE);
-	int i = 0;	
+	int i = 1;	
 
-	while((token = strtok))r
+	// tokenize the command line
+	split_cmds[0] = strtok_r(command, "\t ", &saveptr);
+	while((token = strtok_r(NULL,"\t ", &saveptr))) { 
+		split_cmds[i] = token;
+		i++;
+	}
+
+	char **	split_cmds_2 = malloc(sizeof(char*)*(i+1));
+	for(int j = 0 ; j < i ;  j++) { 
+		split_cmds_2[j] = split_cmds[j];
+		//printf("Command Arg : %s\n", split_cmds_2[j]);
+	}
+	
+
+	split_cmds_2[i++] = NULL;
+	free(split_cmds);
+	
+	return split_cmds_2;	
+
 
 
 
@@ -48,6 +67,16 @@ char * parseCommand(char * command) {
 
 
 
+// test function to print arguments
+void printArgs(char ** commandArgs) {
+	
+	int i = 0;
+	while(commandArgs[i] != NULL) { 
+		printf("%s-", commandArgs[i]);
+		i++;
+	}
+
+}
 
 
 
@@ -61,7 +90,9 @@ int main(int argc, char * argv [])  {
 for(;;) { 
 	
 	char * command = prompt(); // get the command from user
-	printf("%s\n", command);				
+	char ** commandArgs = parseCommand(command);
+	// printArgs(commandArgs);	
+
 	free(command);
 		
 }
