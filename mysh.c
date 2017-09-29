@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
 
 #define BUFFERSIZE 128
 char buffer[BUFFERSIZE];
 int count_commands = 1; // keeps count of commands
-
+char CWDBUFFER[1000];
 
 
 // function to iteratively print prompt
@@ -51,7 +53,7 @@ char ** parseCommand(char * command) {
 	char **	split_cmds_2 = malloc(sizeof(char*)*(i+1));
 	for(int j = 0 ; j < i ;  j++) { 
 		split_cmds_2[j] = split_cmds[j];
-		//printf("Command Arg : %s\n", split_cmds_2[j]);
+		split_cmds_2[j] = strtok(split_cmds_2[j],"\n");
 	}
 	
 
@@ -65,6 +67,26 @@ char ** parseCommand(char * command) {
 
 }
 
+// function that prints the current working directory
+void pwd() { 	
+	
+	getcwd(CWDBUFFER, sizeof(char)*1000);
+	printf("%s\n", CWDBUFFER);
+}
+
+
+// function that changes directory according to destination
+// specifided by the user 
+void wd(char ** commandArgs){ 
+
+	if(commandArgs[1] == NULL) { 
+		chdir(getenv("HOME"));
+	} else {
+	}
+		
+		
+	
+}
 
 
 // test function to print arguments
@@ -72,9 +94,10 @@ void printArgs(char ** commandArgs) {
 	
 	int i = 0;
 	while(commandArgs[i] != NULL) { 
-		printf("%s-", commandArgs[i]);
+		fwrite(commandArgs[i],1, 8, stdout);
 		i++;
 	}
+	
 
 }
 
@@ -91,8 +114,18 @@ for(;;) {
 	
 	char * command = prompt(); // get the command from user
 	char ** commandArgs = parseCommand(command);
-	// printArgs(commandArgs);	
-
+	// printArgs(commandArgs);		
+	
+	// the parsed command args must now be executed accordingly
+//	printf("%s", commandArgs[0]);	
+	if(strcmp(commandArgs[0], "pwd") == 0) { 
+		pwd(); // if the user calls pwd, then pwd
+	} else if (strcmp(commandArgs[0], "cd") == 0) {
+		wd(commandArgs);		
+	} else {
+	//	printf("command not regonized\n");
+	}
+	
 	free(command);
 		
 }
