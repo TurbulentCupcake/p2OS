@@ -33,6 +33,18 @@ char * prompt() {
 }
 
 
+// returns an array with parsed commands
+char * parseCommand(char * command) { 
+
+	char * saveptr = command;
+	char ** split_cmds = malloc(sizeof(char*)*BUFFERSIZE);
+	int i = 0;	
+
+	while((token = strtok))r
+
+
+
+}
 
 
 
