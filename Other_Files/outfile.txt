@@ -1,0 +1,5 @@
+total 16
+-rw-rw-r-- 1 adithya adithya   102 Sep 20 12:23 Description
+-rwxrwxr-x 1 adithya adithya 13672 Sep 28 22:28 main
+-rw-rw-r-- 1 adithya adithya   871 Sep 28 22:28 main.c
+-rwx------ 1 adithya adithya     0 Sep 28 22:29 outfile.txt

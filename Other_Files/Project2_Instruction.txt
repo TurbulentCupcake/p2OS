@@ -1,0 +1,91 @@
+PIPE
+
+// pipe demo
+int main() { 
+ 		int pipefds[2], pid;
+ 			char buffer[100];
+
+ 		pipe(pipefds);
+ 		pid = fork();
+ 		if(pid == 0) { 
+ 			printf("child pid is %d\n", getpid())
+ 			write(pipefds[1], "hello", sizeof("hello"))
+ 			exit(0);
+ 		} else { // parent 
+ 			read(pipefds[0], buffer, 100);
+ 			printf("parent heard: \"%s\" from child\n", buffer);
+ 		}
+ 		printf("outside! I am %d\n", getpid());
+ 		return 0;
+ }
+
+ //redirection with pipe
+
+#include <stdlib.h>
+#include
+
+ int main() { 
+ 	int fd = open("some_text.txt", O_WRONGLY|O_CREAT|O_TRUNC); //check return value
+ 	dup2(fd, 1); //duplicates the file descriptor
+ 	printf("This should be written some_text.txt\n");
+ 	return 0;
+ }
+
+ // 
+ strace ./redirect traces the system calls
+
+
+ // background.c
+
+ #include < fcntl.h>
+#include <sys/wait.h>
+
+ //how to have a child fork and wait or not wait for it
+ int main() { 
+ 	int pid;
+ 	pid= fork();
+ 	if(pid == 0) { 
+ 		sleep(3);
+ 		print("child hello \n");
+ 		exit(0);
+ 	}
+ 	printf("parent\n")
+ 	wait();
+ 	printf("child dead\n");
+ 	return 0;
+ }
+
+ 	}
+
+
+
+/------------------------------------------------------------------------------
+
+
+
+part 2 of the project
+
+timer interrupt goes off every ten seconds. timer.c
+
+
+void scheduler(void) { 
+		for(;;) {
+
+			acquire_lock();
+			check_starvation();
+			check)timeslice_finished();
+			if(queue3 has RUNNABLE) { 
+				round_robin(queue3);
+			} else if (queue2 has RUNNABLE) { 
+				round_robin(queue2);
+			} else if (queue1 has RUNNABLE) { 
+				round_robin(queue1);
+			} else if (queue0 has RUNNABLE)  {
+				run_until_finished(queue0[0]);
+			}
+		}
+		release_loc();
+} 
+
+
+				]}
