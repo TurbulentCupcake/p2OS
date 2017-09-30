@@ -10,6 +10,7 @@
 char buffer[BUFFERSIZE];
 int count_commands = 1; // keeps count of commands
 char CWDBUFFER[1000];
+pid_t  PIDLIST[1000];
 
 
 // function to iteratively print prompt
@@ -100,33 +101,55 @@ void wd(char ** commandArgs){
 // function that lists all the files in a directory
 void ls(char ** commandArgs) { 
 
-	int status;
-	// fork a child
-	pid_t rc = fork();
-	if(rc == 0) {
-		char * argv[4];
-		argv[0] = strdup("/bin/ls");
-		if(commandArgs[1] != NULL) {
-			argv[1] = strdup(commandArgs[1]);
-			argv[2] = NULL;
-			if(execvp(argv[0], argv) < 0) { 
-				// error check if the ls command didnt execute
-			}
-		} else if (commandArgs[1] == NULL) {
-			argv[1] = NULL;
-			if (execvp(argv[0], argv) < 0) { 
-				// error check if the ls command didnt execute
-			}
+	char * argv[4];
+	argv[0] = strdup("/bin/ls");
+	if(commandArgs[1] != NULL) {
+		argv[1] = strdup(commandArgs[1]);
+		argv[2] = NULL;
+		if(execvp(argv[0], argv) < 0) { 
+			// error check if the ls command didnt execute
 		}
-	
-	} else if (rc > 0) {			
-		 (void) waitpid(rc, &status, WUNTRACED | WCONTINUED);
-	} else { 
-		// throw an error
+	} else if(commandArgs[1] == NULL) {
+		argv[1] = NULL;
+		if (execvp(argv[0], argv) < 0) { 
+			// error check if the ls command didnt execute
+		}
 	}
-		
+	
 	
 }
+
+// seperate command to execute functions that require forking 
+void executeCommand(char ** commandArgs, int isBackground) {
+
+	int status;
+	// fork child
+	pid_t rc = fork();
+	if(rc == 0) { // child process
+		
+		// execute commands described by commandArgs
+
+		if(strcmp(commandArgs[0], "ls") == 0) { 
+				ls(commandArgs);
+		} 	
+
+
+	} else if (rc > 0) { // parent process	
+		// if process is not executed in background, wait for it
+		if(isBackground == 0) {
+			(void) waitpid(rc, &status, 0);
+		}
+		// record the process so that we can kill it if it is defunct
+		int i = 0;
+		while(PIDLIST[i] != NULL) { // find a free location to store pid
+			i++;
+		}
+		PIDLIST[i] = rc;
+		
+	}
+		
+}
+			
 
 
 
@@ -150,7 +173,7 @@ int main(int argc, char * argv [])  {
 	
 // create a while loop that iteratively takes in 
 // an input, parses it and executes the commands accordingly
-
+int status;
 for(;;) { 
 	
 	char * command = prompt(); // get the command from user
@@ -163,12 +186,36 @@ for(;;) {
 		pwd(); // if the user calls pwd, then pwd
 	} else if (strcmp(commandArgs[0], "cd") == 0) {
 		wd(commandArgs);		
-	} else if (strcmp(commandArgs[0], "ls") == 0) {
-		ls(commandArgs);
-	}
-	
-	free(command);
+	} else {
+		// if the command is different and requires to be forked
 		
+		// check if the program has to run in the background
+		int size=0;
+		while(commandArgs[size] != NULL) { size++; } // obtain size of commandArgs
+		// we need to check if the second-to-last element is an & (last element is always NULL)
+		if(strcmp(commandArgs[size-1], "&") == 0) {
+			commandArgs[size-1] = NULL; // make position of & into NULL in order to parse easily
+			executeCommand(commandArgs, 1); // execute command such that it runs in background process 	
+	
+		} else { 
+			executeCommand(commandArgs, 0); // else execute normally without background exec
+		}	
+	}
+
+	// iterate through the PIDLIST to find all process that are dead and remove them 
+	for(int i; i <  1000; i++) { 
+		if(PIDLIST[i] != NULL) { 
+			if(waitpid(PIDLIST[i],&status, WNOHANG) == -1) { 
+			//	kill(PIDLIST[i], SIGKILL);
+			//	PIDLIST[i] = NULL;
+			} 
+		}	
+	}
+	free(command);
+	
+
+
+	// handle dead processes	
 }
 
 
