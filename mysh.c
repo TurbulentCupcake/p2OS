@@ -98,26 +98,43 @@ void wd(char ** commandArgs){
 	
 }
 
-// function that lists all the files in a directory
-void ls(char ** commandArgs) { 
 
-	char * argv[4];
-	argv[0] = strdup("/bin/ls");
-	if(commandArgs[1] != NULL) {
-		argv[1] = strdup(commandArgs[1]);
-		argv[2] = NULL;
-		if(execvp(argv[0], argv) < 0) { 
-			// error check if the ls command didnt execute
-		}
-	} else if(commandArgs[1] == NULL) {
-		argv[1] = NULL;
-		if (execvp(argv[0], argv) < 0) { 
-			// error check if the ls command didnt execute
-		}
+
+// general executor function that executes command based on the input
+void executor(char ** commandArgs)  {
+	
+	// obtain the size of the command
+	int cmdSize = 0;
+	while(commandArgs[cmdSize] != NULL) { cmdSize++; } 
+	
+	// construct an argument buffer to send to execvp
+	char * argv[cmdSize+1];
+	
+	// create a string to specify location of process commands 
+	char exec_command[256];
+	
+	// concatenate the user command to bin so it can be called. 
+	snprintf(exec_command, sizeof(exec_command), "%s%s", "/bin/", commandArgs[0]);
+	
+	// place new value in argv[0];
+	argv[0] = strdup(exec_command);		
+	
+	// fill in the rest of the commands in the arguments 
+	int i = 1;
+	while(commandArgs[i] != NULL) { 
+		argv[i] = commandArgs[i]; 
+		i++;
 	}
-	
-	
+	argv[i+1] = NULL;
+
+	// call execvp with the arguments created
+	if(execvp(argv[0], argv) < 0) { 
+		// error check if this command didnt execute correctly
+	}
+
+
 }
+
 
 // seperate command to execute functions that require forking 
 void executeCommand(char ** commandArgs, int isBackground) {
@@ -128,11 +145,7 @@ void executeCommand(char ** commandArgs, int isBackground) {
 	if(rc == 0) { // child process
 		
 		// execute commands described by commandArgs
-
-		if(strcmp(commandArgs[0], "ls") == 0) { 
-				ls(commandArgs);
-		} 	
-
+		executor(commandArgs);
 
 	} else if (rc > 0) { // parent process	
 		// if process is not executed in background, wait for it
