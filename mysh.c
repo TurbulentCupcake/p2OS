@@ -139,13 +139,39 @@ void executor(char ** commandArgs)  {
 // seperate command to execute functions that require forking 
 void executeCommand(char ** commandArgs, int isBackground) {
 
+	// calculate the number of arguments
+	int cmdSize = 0;
+	while(commandArgs[cmdSize] != NULL) { cmdSize++; }
+
+
 	int status;
 	// fork child
 	pid_t rc = fork();
 	if(rc == 0) { // child process
 		
 		// execute commands described by commandArgs
-		executor(commandArgs);
+
+		if(strcmp(commandArgs[cmdSize-2],">") == 0) { // redirect output
+			
+			// close the stdout file descriptor
+			close(STDOUT_FILENO);
+
+			// open a new file to redirect output 
+			int fd = open("outputfile", O_WRONLY|O_CREAT|O_TRUNC);
+			
+			// duplicate the file descriptor
+			dup2(fd, 1);
+			
+			// execute the command 
+			executor(commandArgs);
+			
+		} else if (strcmp(commandArgs[cmdSize-2],"<") == 0) {
+			// redirect input
+		} else if (strcmp(commandArgs[cmdSize-2], "|") == 0) {
+			// pipe output of one into the other
+		} else {
+			executor(commandArgs);
+		}
 
 	} else if (rc > 0) { // parent process	
 		// if process is not executed in background, wait for it
