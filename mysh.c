@@ -13,6 +13,8 @@ char CWDBUFFER[1000];
 pid_t  PIDLIST[1000];
 
 
+
+void printArgs(char ** commandArgs);
 // function to iteratively print prompt
 // and retrieve user command
 char * prompt() { 
@@ -62,6 +64,10 @@ char ** parseCommand(char * command) {
 
 	split_cmds_2[i++] = NULL;
 	free(split_cmds);
+		
+
+	
+
 	
 	return split_cmds_2;	
 
@@ -106,7 +112,9 @@ void executor(char ** commandArgs)  {
 	// obtain the size of the command
 	int cmdSize = 0;
 	while(commandArgs[cmdSize] != NULL) { cmdSize++; } 
-	
+		
+//	printf("command size = %s \n " , commandArgs[0]);
+		
 	// construct an argument buffer to send to execvp
 	char * argv[cmdSize+1];
 	
@@ -115,7 +123,7 @@ void executor(char ** commandArgs)  {
 	
 	// concatenate the user command to bin so it can be called. 
 	snprintf(exec_command, sizeof(exec_command), "%s%s", "/bin/", commandArgs[0]);
-	
+//	printf("command exec = %s\n", exec_command);	
 	// place new value in argv[0];
 	argv[0] = strdup(exec_command);		
 	
@@ -135,6 +143,23 @@ void executor(char ** commandArgs)  {
 
 }
 
+// function to deal with output redirection
+void output_redirect(char ** commandArgs, int charPosition) { 
+
+	// null out the position where the redirection is present
+	commandArgs[charPosition] = NULL;
+	commandArgs[charPosition+1] = NULL;
+//	printArgs(commandArgs);
+	//printf("%s", "reach output redirect\n");
+	//printf("%d\n", charPosition);
+	//printArgs(commandArgs);
+	
+	executor(commandArgs);
+
+
+}
+
+
 
 // seperate command to execute functions that require forking 
 void executeCommand(char ** commandArgs, int isBackground) {
@@ -142,36 +167,33 @@ void executeCommand(char ** commandArgs, int isBackground) {
 	// calculate the number of arguments
 	int cmdSize = 0;
 	while(commandArgs[cmdSize] != NULL) { cmdSize++; }
-
-
+	
+	// check if either of the redirections 
+	// or piping occur
+	
+	int charPosition = 0;
+	while(commandArgs[charPosition] != NULL) { 
+			if(strcmp(commandArgs[charPosition], ">")==0) {
+				break;
+			}
+		charPosition++;
+	}
+	
+	//printf("position of redirection %s\n", commandArgs[charPosition]);
+	
 	int status;
 	// fork child
 	pid_t rc = fork();
 	if(rc == 0) { // child process
 		
-		// execute commands described by commandArgs
-
-		if(strcmp(commandArgs[cmdSize-2],">") == 0) { // redirect output
-			
-			// close the stdout file descriptor
-			close(STDOUT_FILENO);
-
-			// open a new file to redirect output 
-			int fd = open("outputfile", O_WRONLY|O_CREAT|O_TRUNC);
-			
-			// duplicate the file descriptor
-			dup2(fd, 1);
-			
-			// execute the command 
-			executor(commandArgs);
-			
-		} else if (strcmp(commandArgs[cmdSize-2],"<") == 0) {
-			// redirect input
-		} else if (strcmp(commandArgs[cmdSize-2], "|") == 0) {
-			// pipe output of one into the other
-		} else {
-			executor(commandArgs);
+		if(strcmp(commandArgs[charPosition],">") == 0) { 
+			//printf("reached here\n");	
+			output_redirect(commandArgs, charPosition);
 		}
+			
+		//executor(commandArgs);
+
+	
 
 	} else if (rc > 0) { // parent process	
 		// if process is not executed in background, wait for it
@@ -197,7 +219,8 @@ void printArgs(char ** commandArgs) {
 	
 	int i = 0;
 	while(commandArgs[i] != NULL) { 
-		fwrite(commandArgs[i],1, 8, stdout);
+		//fwrite(commandArgs[i],1, 8, stdout);
+		printf("%s\n", commandArgs[i]);
 		i++;
 	}
 	
@@ -217,8 +240,13 @@ for(;;) {
 	
 	char * command = prompt(); // get the command from user
 	char ** commandArgs = parseCommand(command);
-	// printArgs(commandArgs);		
-	
+	 //printArgs(commandArgs);		
+
+
+	if(commandArgs[0] == NULL) { 
+			continue;
+	}
+		
 	// the parsed command args must now be executed accordingly
 //	printf("%s", commandArgs[0]);	
 	if(strcmp(commandArgs[0], "pwd") == 0) { 
