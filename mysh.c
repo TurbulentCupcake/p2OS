@@ -123,7 +123,7 @@ void executor(char ** commandArgs)  {
 	
 	// concatenate the user command to bin so it can be called. 
 	snprintf(exec_command, sizeof(exec_command), "%s%s", "/bin/", commandArgs[0]);
-//	printf("command exec = %s\n", exec_command);	
+	//printf("command exec = %s\n", exec_command);	
 	// place new value in argv[0];
 	argv[0] = strdup(exec_command);		
 	
@@ -148,15 +148,22 @@ void output_redirect(char ** commandArgs, int charPosition) {
 
 	// null out the position where the redirection is present
 	commandArgs[charPosition] = NULL;
-	commandArgs[charPosition+1] = NULL;
 //	printArgs(commandArgs);
 	//printf("%s", "reach output redirect\n");
 	//printf("%d\n", charPosition);
 	//printArgs(commandArgs);
 	
+	// open an input file
+	int out = open(commandArgs[charPosition+1], O_WRONLY|O_CREAT|O_TRUNC, 0600);
+
+	dup2(out, 1);	
+		
+	commandArgs[charPosition+1] = NULL;	
 	executor(commandArgs);
 
 
+	close(out);
+	return;
 }
 
 
@@ -178,23 +185,18 @@ void executeCommand(char ** commandArgs, int isBackground) {
 			}
 		charPosition++;
 	}
-	
-	//printf("position of redirection %s\n", commandArgs[charPosition]);
-	
+//	printf("%d -- char position", charPosition);	
 	int status;
 	// fork child
 	pid_t rc = fork();
 	if(rc == 0) { // child process
-		
-		if(strcmp(commandArgs[charPosition],">") == 0) { 
-			//printf("reached here\n");	
-			output_redirect(commandArgs, charPosition);
+		//fflush(stdout);
+		if(commandArgs[charPosition] != NULL && strcmp(commandArgs[charPosition],">") == 0) { 
+		//	fprintf(stderr, "reached here\n");	
+			output_redirect(commandArgs, charPosition); 
+		} else { 
+			executor(commandArgs);
 		}
-			
-		//executor(commandArgs);
-
-	
-
 	} else if (rc > 0) { // parent process	
 		// if process is not executed in background, wait for it
 		if(isBackground == 0) {

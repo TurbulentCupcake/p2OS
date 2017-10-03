@@ -1,7 +1,0 @@
-total 37
--rw-rw-r-- 1 adithya adithya    26 Sep 29 14:56 _config.yml
-drwxrwxr-x 2 adithya adithya  2048 Oct  2 03:08 [0m[01;34mhellio[0m/
--rw-rw-r-- 1 adithya adithya     0 Oct  2 13:37 hello.txt
--rwxrwxr-x 1 adithya adithya 25288 Oct  2 13:36 [01;32mmysh[0m*
--rw-rw-r-- 1 adithya adithya  6218 Oct  2 13:34 mysh.c
-drwxrwxr-x 2 adithya adithya  2048 Oct  1 00:18 [01;34mOther_Files[0m/
