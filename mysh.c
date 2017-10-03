@@ -11,7 +11,7 @@ char buffer[BUFFERSIZE];
 int count_commands = 1; // keeps count of commands
 char CWDBUFFER[1000];
 pid_t  PIDLIST[1000];
-
+char INPUTBUFFERSIZE = 10000;
 
 
 void printArgs(char ** commandArgs);
@@ -149,9 +149,6 @@ void output_redirect(char ** commandArgs, int charPosition) {
 	// null out the position where the redirection is present
 	commandArgs[charPosition] = NULL;
 //	printArgs(commandArgs);
-	//printf("%s", "reach output redirect\n");
-	//printf("%d\n", charPosition);
-	//printArgs(commandArgs);
 	
 	// open an input file
 	int out = open(commandArgs[charPosition+1], O_WRONLY|O_CREAT|O_TRUNC, 0600);
@@ -164,6 +161,28 @@ void output_redirect(char ** commandArgs, int charPosition) {
 
 	close(out);
 	return;
+}
+
+void input_redirect(char ** commandArgs, int charPosition) {
+
+	// null out the character position
+	commandArgs[charPosition] = NULL;
+	
+	// open in read only mode
+	int in = open(commandArgs[charPosition+1], O_RDONLY, 0600);
+
+	// duplicate the input file descriptor
+	dup2(in, 2);	
+
+	// create the input buffer 
+	char input_buffer[INPUTBUFFERSIZE];
+	
+	// copy the input from file to buffer 
+	fgets(input_buffer,INPUTBUFFERSIZE, in);
+	
+	printf("%s\n", input_buffer);
+	
+
 }
 
 
@@ -180,12 +199,12 @@ void executeCommand(char ** commandArgs, int isBackground) {
 	
 	int charPosition = 0;
 	while(commandArgs[charPosition] != NULL) { 
-			if(strcmp(commandArgs[charPosition], ">")==0) {
+			if(strcmp(commandArgs[charPosition], ">")==0 || 
+			   strcmp(commandArgs[charPosition], "<")==0) {
 				break;
 			}
 		charPosition++;
 	}
-//	printf("%d -- char position", charPosition);	
 	int status;
 	// fork child
 	pid_t rc = fork();
@@ -194,6 +213,9 @@ void executeCommand(char ** commandArgs, int isBackground) {
 		if(commandArgs[charPosition] != NULL && strcmp(commandArgs[charPosition],">") == 0) { 
 		//	fprintf(stderr, "reached here\n");	
 			output_redirect(commandArgs, charPosition); 
+		} else if (commandArgs[charPosition] != NULL && strcmp(commandArgs[charPosition],"<") == 0) {
+			// input redirection
+			input_redirect(commandArgs, charPosition);			
 		} else { 
 			executor(commandArgs);
 		}

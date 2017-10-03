@@ -1,0 +1,8 @@
+total 39
+-rw-rw-r-- 1 adithya adithya    26 Sep 29 14:56 _config.yml
+drwxrwxr-x 2 adithya adithya  2048 Oct  2 03:08 hellio
+-rwxrwxr-x 1 adithya adithya 25880 Oct  2 20:38 mysh
+-rw-rw-r-- 1 adithya adithya  6574 Oct  2 20:32 mysh.c
+drwxrwxr-x 2 adithya adithya  2048 Oct  1 00:18 Other_Files
+-rw------- 1 adithya adithya     0 Oct  2 20:38 output.txt
+-rw-rw-r-- 1 adithya adithya    88 Oct  2 20:27 test
